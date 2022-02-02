@@ -5,7 +5,7 @@ import "bootstrap/dist/css/bootstrap.min.css" ;
 import  SalesList  from './components/sales-list.js';
 import  Login  from './components/login.js';
 import AnalyzeSales from './components/analyze.js';
-import ManagementTools from './components/management.component';
+import ManagementTools from './components/management';
 import Graph1 from './components/graphs/graph1.component';
 import Graph2 from './components/graphs/graph2.component';
 import Graph3 from './components/graphs/graph3.component';

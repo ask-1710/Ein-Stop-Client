@@ -17,17 +17,15 @@ const SalesList = props => {
   const [queryCoupons, setQueryCoupons] = React.useState()
   const [queryPurchaseMethod, setQueryPurchaseMethod] = React.useState("")
   const [purchaseMethods, setPurchaseMethods] = React.useState(["Any"]);
-  const [pages, setQueryPage] = React.useState(0) 
   const [locations,  setLocations] = React.useState(["All"])
   const [startDate, setstartDate] = React.useState(new Date('1/2/2013'))
   const [endDate, setendDate] = React.useState(new Date('12/30/2017'))
-  const [NoSalesFlag, setNoSalesFlag] = React.useState(false)
+  const [SalesFlag, setSalesFlag] = React.useState(false)
   const [modifiedSales, setModifiedSales] = React.useState(null)
   const [totalSales, settotalSales] = useState(0)
   const [revenue, setRevenue]=useState(0.0)
-  const [minDate, setMinDate] = useState(new Date('1/2/2013'))
-  const [maxDate, setMaxDate] = useState(new Date('12/30/2017'))
-  const [trigger, setTrigger] = useState(false)
+  const [minDate, setMinDate]=useState(new Date('1/2/2013'))
+  const [maxDate, setMaxDate]=useState(new Date('12/30/2017'))
   
   useEffect(() => {
     retrieveSales();
@@ -39,17 +37,17 @@ const SalesList = props => {
   const onChangeQueryLocation = e => {
     const searchLocation = e.target.value;
     setQueryLocation(searchLocation);
-  };
+  }
 
   const onChangeQueryCoupons = e => {
     const searchCoupons = (e.target.checked?true:false)
     setQueryCoupons(searchCoupons);
-  };
+  }
 
   const onChangeQueryPurchaseMethod = e => {
     const searchPurchaseMethod = e.target.value;
     setQueryPurchaseMethod(searchPurchaseMethod);
-  };
+  }
 
   const onChangeSetstartDate = e => {
     setstartDate(e)
@@ -62,55 +60,34 @@ const SalesList = props => {
   const retrieveSales = () => {
     SalesDataService.getAll()
       .then(response => {
-        setSales(response.data.Sales);
-      })
-      .catch(e => {
-        console.log(e);
-      });
-      setNoSalesFlag(true)
-  };
-
-  const retrievePurchaseMethod = () => {
-    SalesDataService.getPurchaseMethod()
-      .then(response => {
-        setPurchaseMethods(["Any"].concat(response.data));
-        setNoSalesFlag(true)
+        setSales(response.data.Sales)
+        setSalesFlag(true)
       })
       .catch(e => {
         console.log(e);
       });
       
-  };
+  }
+
+  const retrievePurchaseMethod = () => {
+    SalesDataService.getPurchaseMethod()
+      .then(response => {
+        setPurchaseMethods(["Any"].concat(response.data));
+      })
+      .catch(e => {
+        console.log(e);
+      });
+  }
 
   const retrieveLocations = () => {
     SalesDataService.getStoreLocations()
     .then(response => {
       setLocations(["All"].concat(response.data));
-      setNoSalesFlag(true)
     })
     .catch(e => {
-      console.log(e);
+      console.log(e)
     });
   }
-
-  const refreshList = () => {
-    retrieveSales();
-    setNoSalesFlag(true)
-  };
-
-  const find = (query, by) => {
-    SalesDataService.find(query, by)
-      .then(response => {
-        
-        setSales(response.data.Sales);
-
-        modifySalesFormat() 
-        setNoSalesFlag(true)
-      })
-      .catch(e => {
-        console.log(e);
-      });
-  };
 
   const modifySalesFormat = () => {
     
@@ -133,28 +110,30 @@ const SalesList = props => {
         })
       }
     })
-
-    modified.sort((a,b) => (dayjs(b[1]).toDate())-(dayjs(a[1]).toDate()))
-
+    
     if(modified.length>1) {
       setModifiedSales(modified)
       settotalSales(total)
+      setSalesFlag(true)
       setRevenue(revenue)
     }
-
+    else{
+      setSalesFlag(false)
+    }
   }
 
   const findAllFilters = () => {
     if(queryLocation === "Any") queryLocation = null
     if(queryPurchaseMethod === "All") queryPurchaseMethod = null
     SalesDataService.findAll(queryLocation, queryPurchaseMethod, queryCoupons)
-    .then(response => {
-      setSales(response.data.Sales)
-      modifySalesFormat(sales)
-    })
-    .catch(e => {
-        console.log(e)
-    })
+      .then(response => {
+        setSales(response.data.Sales)
+        modifySalesFormat(sales)
+      })
+      .catch(e => {
+          console.log(e)
+          setSalesFlag(false)
+      })
   }
 
   return (
@@ -165,6 +144,7 @@ const SalesList = props => {
         <div class="sticky-top">
         <div class="nav flex-column">     
           <div className="form-outline form-white">
+              <label class="form-label" for="formWhite1">Purchase Method</label>
               <select class="form-control selectinput" type="select" onChange={onChangeQueryPurchaseMethod}>
                 {
                   purchaseMethods.map(method => {
@@ -174,61 +154,61 @@ const SalesList = props => {
                   })
                 }
               </select>
-              <label class="form-label" for="formWhite1">Purchase Method</label>
           </div>
-        <div className="form-outline form-white">
-          <select class="form-control selectinput" type='select'  onChange={onChangeQueryLocation}>
-              {
-                locations.map(method => {
-                  return (
-                    <option value={method}> {method} </option>
-                  )
-                })
-              }
-            </select>
+          <div className="form-outline form-white">
             <label class="form-label" for="formWhite2">Location</label>
-            {/* <div className="input-group-append">
-                <button className="btn btn-outline-dark" onClick={findByLocation}>Apply</button>
-            </div> */}
-        </div>
-        <div className="form-outline form-white">
-            <DatePicker
-                className='form-control input'
-								id="startDate"
-								onChange={onChangeSetstartDate}
-								selected={minDate}
-                startDate={minDate}
-                endDate={maxDate}
-							/>
-            <label class="form-label" for="formWhite3">From</label>
-        </div>
-        <div className="form-outline form-white">
-            <DatePicker
-                className='form-control input' 
-								id="endDate"
-								onChange={onChangeSetendDate}
-								selected={maxDate}
-                startDate={minDate}
-                endDate={maxDate}
-							/>
-              <label class="form-label" for="formWhite4">To</label>
-        </div>   
-        <div class="custom-control custom-switch">
-          <input type="checkbox"  class="regular-checkbox big-checkbox" onChange={onChangeQueryCoupons} id="customSwitch2" />
-        </div>
-        <label class="form-label" for="formWhite6">Coupons</label>
-        <br/>
-        <br/>
-        <div className="input-group-append mb-3">
-          <button
-            className="btn btn-outline-dark"
-            type="button"
-            onClick={findAllFilters}
-          >
-            Apply All Filters
-          </button>
-        </div>
-      </div>  
+            <select class="form-control selectinput" type='select'  onChange={onChangeQueryLocation}>
+                {
+                  locations.map(method => {
+                    return (
+                      <option value={method}> {method} </option>
+                    )
+                  })
+                }
+              </select>
+              {/* <div className="input-group-append">
+                  <button className="btn btn-outline-dark" onClick={findByLocation}>Apply</button>
+              </div> */}
+          </div>
+          <div className="form-outline form-white">
+              <label class="form-label" for="formWhite3">From</label>
+              <DatePicker
+                  className='form-control input'
+                  id="startDate"
+                  onChange={onChangeSetstartDate}
+                  selected={startDate}
+                  startDate={minDate}
+                  endDate={maxDate}
+                />
+          </div>
+          <div className="form-outline form-white">
+          <label class="form-label" for="formWhite4">To</label>
+              <DatePicker
+                  className='form-control input' 
+                  id="endDate"
+                  onChange={onChangeSetendDate}
+                  selected={endDate}
+                  startDate={minDate}
+                  endDate={maxDate}
+                />
+              
+          </div>   
+          <label class="form-label" for="formWhite6">Coupons</label>
+          <div class="custom-control custom-switch">
+            <input type="checkbox"  class="regular-checkbox big-checkbox" onChange={onChangeQueryCoupons} id="customSwitch2" />
+          </div>
+          <br/>
+          <br/>
+          <div className="input-group-append mb-3">
+            <button
+              className="btn btn-outline-dark"
+              type="button"
+              onClick={findAllFilters}
+            >
+              Apply All Filters
+            </button>
+          </div>
+        </div>  
         <br/>
         <br/>
         <div className='row py-3'>
@@ -238,7 +218,7 @@ const SalesList = props => {
                   <h5 className="card-title card-bg-dark">STATS</h5>
                   <p className="card-text card-bg-dark">
                     <strong>Total Sales : </strong>{priceFormatter(totalSales)}<br/>
-                    <strong>Revenue: </strong>{priceFormatter(Math.trunc(revenue))}<br/>
+                    <strong>Revenue: $</strong>{priceFormatter(Math.trunc(revenue))}<br/>
                   </p>
                 </div>
               </div>
@@ -249,7 +229,7 @@ const SalesList = props => {
       <div className='col-1'></div>
       <div className="col">
       { 
-        NoSalesFlag && modifiedSales ?
+        SalesFlag && modifiedSales ?
         <Chart
             chartType="Table"
             width="100%"
@@ -277,7 +257,7 @@ const SalesList = props => {
           /> :
           <div class="jumbotron jumbotron-fluid">
           <div class="container">
-            <h1 class="display-4">No Such Sales Exist :(</h1>
+            <h1 class="display-4">No such sales exist :(</h1>
             <p class="lead">Try the following<br/>
               <li>Change the filters</li>
               <li>Click on <div className='text-italics'>Apply All Filters</div> two times if <div className='text-italics'>desired</div> results are not obtained</li>

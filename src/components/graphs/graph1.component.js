@@ -14,8 +14,8 @@ const Graph1 = props => {
   const [storeToDisplay, setStoreToDisplay] = useState('Austin')
 
     useEffect(() => {
-      retrieveLocations();
-    }, []);
+      DisplayPieChart() ;
+    }, [noData]);
     
     const retrieveLocations = () => {
         SalesDataService.getStoreLocations()
@@ -54,6 +54,7 @@ const Graph1 = props => {
     }
 
     const DisplayPieChart = () => {
+        retrieveLocations();
         SalesDataService.find(store, "location")
         .then(response => {       
             setSales(response.data.Sales) 
@@ -64,12 +65,14 @@ const Graph1 = props => {
             console.log(e);
         })
         const series = calculateQuantityItems()
+        
         setdataForPiePlot(series)
         setStoreToDisplay(store)             
     }
 
     const OnChangeSetStore = e => {
         setStore(e.target.value)
+        setNoData(true)
     }
 
     return (
@@ -90,7 +93,7 @@ const Graph1 = props => {
         <div className='row py-4'></div>
         <div>
         {
-          dataForPiePlot?(
+          dataForPiePlot&&!noData?(
           <div className='container'>
               <div class="jumbotron jumbotron-fluid">
               <div class="container">
@@ -110,7 +113,7 @@ const Graph1 = props => {
                 }}
               />
             </div> ) : (
-            noData? <div>No Data yet</div> :
+            noData? <div className='centre-text'>Loading Chart..</div> :
             <div class="jumbotron jumbotron-fluid centre-text">
               <div class="container">
                 <h1 class="display-6">Sales % Of Items in A store</h1>
